@@ -2,7 +2,7 @@ import csv
 
 HEADER = "\\begin{table*}\n" + \
   "\\tiny\n" + \
-  "\\caption{TYGAR vs. Our tool}\n" + \
+  "\\caption{\\textsc{Tygar} vs. \\textsc{Petsy}}\n" + \
   "\\label{tab:results}\n" + \
   "\\begin{tabular}{c c c | r | r | r}\n"
 
@@ -23,7 +23,7 @@ def write_latex():
     with open("results.tex", 'w') as outfile:
       outfile.write(HEADER)
       outfile.write ('\\hline\n')
-      outfile.write("N & Name & Query   &  Time (s): TYGAR	& Time (s): Ours & Speedup \\\\ \n")
+      outfile.write("N & Name & Query   &  Time (s): \\textsc{Tygar}	& Time (s): \\textsc{Petsy} & Speedup \\\\ \n")
       outfile.write ('\\hline\n')
       with open('results.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')

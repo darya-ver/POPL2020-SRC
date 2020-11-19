@@ -24,6 +24,7 @@
 %% The first command in your LaTeX source must be the \documentclass command.
 % \documentclass[acmlarge]{acmart}
 \documentclass[acmsmall,nonacm]{acmart}
+\usepackage{listings}
 %% NOTE that a single column version is required for 
 %% submission and peer review. This can be done by changing
 %% the \doucmentclass[...]{acmart} in this template to 
@@ -52,6 +53,55 @@
 \copyrightyear{2018}
 \acmYear{2018}
 \acmDOI{10.1145/1122445.1122456}
+
+% Type-Guided Enumerative Program Synthesis for Higher-Order Polymorphic Language
+
+
+% Good ideas:
+% - pets: polymorphic enumerative type-guided synthesis
+% - petsy: Polymorphic Enumerative Type-guided SYnthesis
+% - petys: Polymorphic Enumerative TYpe-guided Synthesis
+% - styles: S type lookups enumerative syntheiss
+% http://boulter.com/anagram/
+
+% petys
+% pettys
+% petice
+% psyche: pol
+% petsy
+
+% Program enu
+% TyGePS
+% s: synthesis
+% t: type-guided 
+% c: component-based
+% e: enumerative
+% p: polymorphic
+% g: guided
+
+
+
+% TyGu
+% \textsc{Tygar} 
+% SYGUS 
+% sy syntax
+
+% given a agrammaer
+% Gu ided
+% e
+
+% Higher-Order Polymorphic Language
+
+% https://nutrimatic.org/?q=%22A%2BtygA%2B%22&go=Go
+
+% stygia
+% partygoers
+% stygian
+% apoptygma
+% nantyglo
+% stygionympha
+% pettygrove
+% ortygia
 
 
 %%
@@ -88,7 +138,8 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{Enumerative Type-Guided Program Synthesis for Higher-Order Polymorphic Language} % \thanks{Supported by organization x.}}
+% \title{Enumerative Type-Guided Program Synthesis for Higher-Order Polymorphic Language} % \thanks{Supported by organization x.}}
+\title{\textsc{Petsy}: Polymorphic Enumerative Type-guided Synthesis}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -128,8 +179,12 @@ into a Haskell type signature as follows:
 
 \begin{equation}
   \label{query1}
-  f:Maybe (a \to a) \to x:a \to a
+  f:\texttt{Maybe}~(a \to a) \to x:a \to a
 \end{equation}
+
+% \begin{lstlisting}
+%   f:\text{Maybe} (a \to a) \to x:a \to a
+% \end{lstlisting}
 
 \noindent where \verb|f| represents a possible function (hence the \verb|Maybe| type), and 
 \verb|x| is of the same type that \verb|f| takes in and returns. A possible 
@@ -147,9 +202,10 @@ it is idiomatic and concise, and doesn't rely on pattern matching.
 It is potentially non-intuitive, though, and could be difficult 
 for programmers to find on their own. 
 
+
 % We set out to build an enumerative synthesis tool that . 
 % TODO this paragraph needs to be worded better.
-We present TODONAME, a tool that allows users to provide a type signature and 
+We present \textsc{Petsy}, a tool that allows users to provide a type signature and 
 optional examples, and get back a code snippet 
 that consists of a composition of Haskell library functions. This allows
 users to speed up their programming by using our tool to synthesize small 
@@ -164,27 +220,28 @@ The problem we are exploring is polymorphic type-guided synthesis via
 enumerative search. Related problems have been explored before. 
 
 \vspace{2mm}
-\noindent \textbf{\textit{MYTH.}} Myth [link] already explores enumerative search for 
+\noindent \textbf{\textit{MYTH.}} \textsc{Myth} \cite{myth}
+already explores enumerative search for 
 type-directed synthesis, but it does not support polymorphism or typeclasses 
-like we'd like our tool to. 
+like we'd like \textsc{Petsy} to. 
 
 \vspace{2mm}
-\noindent \textbf{\textit{TYGAR.}} TYGAR [link] uses Petri nets to 
+\noindent \textbf{\textit{\textsc{Tygar}.}} \textsc{Tygar} \cite{tygar} uses Petri nets to 
 tackle type-guided Haskell program synthesis, and is remarkable in that 
 it also supports polymorphic types, typeclasses, and can check 
 user-provided input-output examples. Because of its use of Petri nets, 
 however, it has to reduce everything to first order, meaning that 
 it can't make use of lambdas, which limits the space of programs that
-TYGAR can pull from.
+\textsc{Tygar} can pull from.
 
 \vspace{2mm}
-\noindent \textbf{\textit{SYNQUID.}} Synquid [link] makes 
+\noindent \textbf{\textit{SYNQUID.}} \textsc{Synquid} \cite{synquid} makes 
 use of an enumerative search approach, lambdas, and polymorphism. 
 Its type system, however, restricts type variables
 from unifying with arrow types. This prevents, for example, 
-${Maybe}$ ${a \to a}$ 
+\texttt{Maybe} ${a \to a}$ 
 and ${\alpha_1 \to \alpha_0 \to b}$ from unifying, even though in theory
-they could if $Maybe$ $a$ unified with $\alpha_1$, and $a$ unfied 
+they could if \texttt{Maybe} $a$ unified with $\alpha_1$, and $a$ unfied 
 with $\alpha_0 \to b$. This leads to some programs being unreachable
 and, in the context of higher-order components, limits the search space. 
 
@@ -203,15 +260,15 @@ problem is a Haskell code snippet that has the desired type and works
 for the optionally given examples.
 
 
-% \subsection{Limitations with Synquid's enumeration strategy}
-\subsection{Extending Synquid's enumeration strategy} 
+% \subsection{Limitations with \textsc{Synquid}'s enumeration strategy}
+\subsection{Extending \textsc{Synquid}'s enumeration strategy} 
 % TODO thoughts on this section title change? 
 
-Our approach builds upon Synquid, which solves its synthesis task 
+\textsc{Petsy} builds upon \textsc{Synquid}, which solves its synthesis task 
 by performing a top-down enemerative search and taking advantage of
 refinement types that are included in the initial type query. 
 
-Synquid synthesizes function applications in the following way. 
+\textsc{Synquid} synthesizes function applications in the following way. 
 Given a goal $?? :: T$ that is an application, split it into two 
 goals for the function and argument: $(?? :: \alpha \to T)$ and 
 $(?? :: \alpha)$. Repeating this process in the first goal lets us 
@@ -249,11 +306,11 @@ be more programmer-relevant than flat programs.
 
 \subsection{Memoization (caching subproblems during enumeration)}
 
-Because of its enumerative and iterative deepening qualities, our tool 
+Because of its enumerative and iterative deepening qualities, \textsc{Petsy} 
 generates many repeated subproblems
 over the course of the search, wasting a lot of time redoing searches it has
 already done. This makes memoization crucial to practical 
-top-down enumeration, which Myth [link] was able to solve in a 
+top-down enumeration, which \textsc{Myth} \cite{myth} was able to solve in a 
 first-order setting.
 In our polymorphic context, however, memoization is non-trivial. 
 With polymorphism, goal types can contain free 
@@ -285,13 +342,13 @@ and $\beta_0 \to Int$, meaning that they will hit the same entry in the map,
 despite having different original names.
 
 To resolve the second issue, we use type inference to infer the type of 
-the retrieved programs. For example, if we retrieve a program \verb|length|, 
+the retrieved programs as if it was an existing component. For example, if we
+retrieve a program \verb|length|, 
+
 ... . % TODO explain how this works. 
 Similarly, if we retrieve a program \verb|incr|, 
 ... . % TODO explain how this works.
 % TODO bring it all together to explain how it fixes issue.
-
-
 
 % table of data 
 \input{results}
@@ -304,31 +361,33 @@ Similarly, if we retrieve a program \verb|incr|,
 
 
 % TODO make sure that this is correct (where queries are from)
+% TODO say how many components are used in the tests
 We tested our results on 20 queries, that were based on the queries 
-from TYGAR's [link] paper and ${\lambda^2}$ [link], and compared our tool with TYGAR, 
+from \textsc{Tygar}'s \cite{tygar} paper and ${\lambda^2}$ \cite{lambda2}, and 
+compared \textsc{Petsy} with \textsc{Tygar}, 
 which is the tool that most resembles our own. The results can be found in 
 Table \ref{tab:results}.
 
 
-% \subsection{TYGAR vs. Memoization}
+% \subsection{\textsc{Tygar} vs. Memoization}
 \vspace{2mm}
 \noindent \textbf{\textit{Analysis.}} 
 % TODO re-write this once we have more accurate test bench
-TYGAR did better than our tool in (TODO) out of the 20 tests. 
+\textsc{Tygar} did better than \textsc{Petsy} in (TODO) out of the 20 tests. 
 For most of the tests, the difference between the 2 tools is quite small. There
 are additionally some tests that we do much better in (TODO list them)
 and some tests that we do much worse in (TODO list them).
-Test \#(TODO) shows how we are able to synthesize lambdas whereas TYGAR cannot.
+Test \#(TODO) shows how we are able to synthesize lambdas whereas \textsc{Tygar} cannot.
 
-These results are quite encouraging. For one, since our tool takes advantage of 
-lambdas and TYGAR doesn't, our tool is more expressive and therefore searches through 
+These results are quite encouraging. For one, since \textsc{Petsy} takes advantage of 
+lambdas and \textsc{Tygar} doesn't, \textsc{Petsy} is more expressive and therefore searches through 
 more programs, yet is still competitive. We also have only implemented the most
-basic form of memoization, and plan to improve upon it to make our tool even
+basic form of memoization, and plan to improve upon it to make \textsc{Petsy} even
 faster (see \nameref{future}).
 
 \vspace{2mm}
-\noindent \textbf{\textit{Quality of Results.}} For the most part, both TYGAR 
-and our tool returned the same programs. If they didn't return the same program,
+\noindent \textbf{\textit{Quality of Results.}} For the most part, both \textsc{Tygar} 
+and \textsc{Petsy} returned the same programs. If they didn't return the same program,
 the programs were equivalent, so the differences between the results of the two
 tools is insignificant. 
 
@@ -354,9 +413,7 @@ which we can improve upon what we have:
 %% The next two lines define the bibliography style to be used, and
 %% the bibliography file.
 \bibliographystyle{ACM-Reference-Format}
-\bibliography{sample-base} % TODO complete this
-
-TODO
+\bibliography{sample-base} 
 
 
 
