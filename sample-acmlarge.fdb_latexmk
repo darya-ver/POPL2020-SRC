@@ -1,14 +1,14 @@
 # Fdb version 3
-["bibtex sample-acmlarge"] 1605778312 "sample-acmlarge.aux" "sample-acmlarge.bbl" "sample-acmlarge" 1605779690
+["bibtex sample-acmlarge"] 1605779917 "sample-acmlarge.aux" "sample-acmlarge.bbl" "sample-acmlarge" 1605780037
   "./ACM-Reference-Format.bst" 1605680716 85327 68580d41bd279ee2c59d376cb377f3d6 ""
-  "sample-acmlarge.aux" 1605779689 2607 aea59ca8e0f64b7988c8b33a702561b6 "pdflatex"
+  "sample-acmlarge.aux" 1605780036 2461 d3b76b23e7065838798fe80e0a8ba9a1 "pdflatex"
   "sample-base.bib" 1605680716 53269 2c33053d47f91b7868abb19f5260a663 ""
   (generated)
-  "sample-acmlarge.bbl"
   "sample-acmlarge.blg"
-["pdflatex"] 1605779688 "/Users/daryaverzhbinsky/CODE/GitCode/SCHOOL/HOOGLEPLUS/POPL2021-SRC/sample-acmlarge.tex" "/Users/daryaverzhbinsky/CODE/GitCode/SCHOOL/HOOGLEPLUS/POPL2021-SRC/sample-acmlarge.pdf" "sample-acmlarge" 1605779691
-  "/Users/daryaverzhbinsky/CODE/GitCode/SCHOOL/HOOGLEPLUS/POPL2021-SRC/sample-acmlarge.aux" 1605779689 2607 aea59ca8e0f64b7988c8b33a702561b6 ""
-  "/Users/daryaverzhbinsky/CODE/GitCode/SCHOOL/HOOGLEPLUS/POPL2021-SRC/sample-acmlarge.tex" 1605779687 48437 6fe6e1cc611079314533f2f0228cb498 ""
+  "sample-acmlarge.bbl"
+["pdflatex"] 1605780034 "/Users/daryaverzhbinsky/CODE/GitCode/SCHOOL/HOOGLEPLUS/POPL2021-SRC/sample-acmlarge.tex" "/Users/daryaverzhbinsky/CODE/GitCode/SCHOOL/HOOGLEPLUS/POPL2021-SRC/sample-acmlarge.pdf" "sample-acmlarge" 1605780037
+  "/Users/daryaverzhbinsky/CODE/GitCode/SCHOOL/HOOGLEPLUS/POPL2021-SRC/sample-acmlarge.aux" 1605780036 2461 d3b76b23e7065838798fe80e0a8ba9a1 ""
+  "/Users/daryaverzhbinsky/CODE/GitCode/SCHOOL/HOOGLEPLUS/POPL2021-SRC/sample-acmlarge.tex" 1605780034 14605 61b6410fd97e6608248eb47b39069710 ""
   "/usr/local/texlive/2020/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-4.enc" 1558214095 7693 0f2dce6d313c82989ec3a67fc24df2a0 ""
   "/usr/local/texlive/2020/texmf-dist/fonts/enc/dvips/libertine/lbtn_25tcsq.enc" 1490131464 2921 8ca0eb0831f9bc5da080d3697cfe67bf ""
   "/usr/local/texlive/2020/texmf-dist/fonts/enc/dvips/libertine/lbtn_76gpa5.enc" 1490131464 2933 9ad527ce78d7c5fa0a642dead095f172 ""
@@ -189,14 +189,14 @@
   "/usr/local/texlive/2020/texmf.cnf" 1586288231 577 d60164b4589a341208aff7a667fbbdcb ""
   "acmart.cls" 1605680716 100177 234f2ed2903e05767882d8115d913d2a ""
   "results.tex" 1605777988 1610 0c6311c094f5b1d30cf522066099da35 ""
-  "sample-acmlarge.aux" 1605779689 2607 aea59ca8e0f64b7988c8b33a702561b6 "pdflatex"
-  "sample-acmlarge.bbl" 1605778313 1785 8ed37e936ba16de73718c10d329b7108 "bibtex sample-acmlarge"
-  "sample-acmlarge.out" 1605779689 1733 7f771a85c3d7e640bb83e56f7d92cbae "pdflatex"
-  "sample-acmlarge.tex" 1605779687 48437 6fe6e1cc611079314533f2f0228cb498 ""
+  "sample-acmlarge.aux" 1605780036 2461 d3b76b23e7065838798fe80e0a8ba9a1 "pdflatex"
+  "sample-acmlarge.bbl" 1605779917 1785 8ed37e936ba16de73718c10d329b7108 "bibtex sample-acmlarge"
+  "sample-acmlarge.out" 1605780036 1445 fdefcdfc3392e711d54375049c789b20 "pdflatex"
+  "sample-acmlarge.tex" 1605780034 14605 61b6410fd97e6608248eb47b39069710 ""
   (generated)
-  "sample-acmlarge.aux"
   "sample-acmlarge.log"
-  "sample-acmlarge.out"
-  "sample-acmlarge.pdf"
+  "sample-acmlarge.aux"
   "/Users/daryaverzhbinsky/CODE/GitCode/SCHOOL/HOOGLEPLUS/POPL2021-SRC/sample-acmlarge.log"
+  "sample-acmlarge.out"
   "/Users/daryaverzhbinsky/CODE/GitCode/SCHOOL/HOOGLEPLUS/POPL2021-SRC/sample-acmlarge.pdf"
+  "sample-acmlarge.pdf"
