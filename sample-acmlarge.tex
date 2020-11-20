@@ -257,50 +257,34 @@ and optional input-output examples. A \textit{solution} to the synthesis
 problem is a Haskell code snippet that has the desired type and works 
 for the optionally given examples.
 
-
 \subsection{Extending \textsc{Synquid}'s enumeration strategy} 
 
-\textsc{Petsy} builds upon \textsc{Synquid}, which solves its synthesis task 
-by performing a top-down enemerative search and taking advantage of
-refinement types that are included in the initial type query. 
+% from synquid paper:
+% SYNQUID features ML-style polymorphism, where type variables are universally
+% quantified at the outermost level to yield type schemas. Unlike ML, we
+% restrict type variables to range only over scalars, which gives us the
+% ability to determine whether a type is a scalar, even if it contains free
+% type variables. We found this restriction not to be too limiting in
+% practice.
 
-% \textsc{Synquid} synthesizes function applications in the following way. 
-% Given a goal $?? :: T$ that is an application, split it into two 
-% goals for the function and argument: $(?? :: \alpha \to T)$ and 
-% $(?? :: \alpha)$. Repeating this process in the first goal lets us 
-% use functions that take in more arguments:
+\textsc{Synquid} also solves this synthesis task via top-down enumerative search.
+The task it solves is similar, the only difference being that the types are
+not just polymorphic -- they are liquid (refinement) types. Among other
+reasons, \textsc{Synquid}'s method of supporting refinements requires it to
+determine whether a type is a scalar without having to substitute its type
+variables. This is made possible by restricting type variables to not unify
+with arrow types. Because \textsc{Petsy} employs an enumerative search method
+instead, there is no reason to have this restriction.
 
-% \[ (?? :: \alpha_0 \to T) (?? :: \alpha_0) \]
-% \[ (?? :: \alpha_1 \to \alpha_0 \to T) (?? :: \alpha_1) (?? :: \alpha_0) \]
-% \[ (?? :: \alpha_2 \to \alpha_1 \to \alpha_0 \to T) (?? :: \alpha_2) (?? :: \alpha_1) (?? :: \alpha_0) \]
-
-% This could repeat forever. To ensure search terminates, the components 
-% decide the cutoff point: if the longest arrow type in the components is 
-% $a \to b \to c \to d$, then we stop splitting the goal once we see 
-% $\alpha_2 \to \alpha_1 \to \alpha_0 \to T$.
-
-% TODO remove the cutoff discussion
-
-However, \textsc{Synquid} doesn't support cases where type variables are
-instantiated with  arrow types. One concrete example is the query $(a \to b,
-a) \to b$  with components $[\texttt{fst}, \texttt{snd}]$. The solution is 
-\texttt{fst p (snd p)}, which uses \texttt{fst} as a two-argument function, 
-which means \texttt{fst} must have filled the goal $\alpha_1 \to \alpha_0 \to
-T$. However, \texttt{fst} and \texttt{snd} are one-argument functions --  the
-cutoff is $\alpha_0 \to T$, so we never end up considering the goal $\alpha_1
-\to \alpha_0 \to T$.
-
-Our solution is to use iterative deepening on the size of programs, 
-rather than depth first search. Because we only enumerate programs up 
-to a certain size anyways, we can be rid of the decision of ``where to 
-stop splitting the goal''.
-
-We also replace the measure of program size with ``number of components'' 
-rather than ``recursion depth'', because size tends to generate deeper 
-programs earlier, and deep programs like \texttt{f (g (h x))} tend to 
-be more programmer-relevant than flat programs.
-
-
+This means \textsc{Petsy} can synthesize a wider range of programs. One
+concrete example is for the query $(a \to b, a) \to b$, with components
+$[\texttt{fst} :: \forall x\ldotp\forall y\ldotp (x,y)\to x, \texttt{snd} ::
+\forall x\ldotp\forall y\ldotp (x,y)\to y]$. The solution is \texttt{fst p
+(snd p)}, which is only possible if $\forall x\ldotp\forall y\ldotp (x,y)$ in
+the component $\texttt{fst} :: \forall x\ldotp\forall y\ldotp (x,y)\to x$
+unifies with $p :: (a \to b, a)$. Because the type variable $x$ needs to unify
+with the arrow type $a \to b$, \textsc{Synquid} cannot do this while
+\textsc{Petsy} can.
 
 \subsection{Memoization (caching subproblems during enumeration)}
 
@@ -333,26 +317,37 @@ despite having different original names.
 
 \vspace{2mm}
 \noindent \textbf{\textit{Type unificiation clashes.}} 
+Because we treat $\alpha_0 \to Int$ and $\alpha_1 \to Int$ as the same goal
+under renaming, a question naturally arises over how to retrieve the programs
+for this goal such that type variables $\alpha_0$ and/or $\alpha_1$ do not clash.
+We do so by storing untyped programs, using type inference to generate fresh
+type variables for programs retrieved from the map. This ensures no name clashes.
+
+As an example, say there are two programs featuring different type variables that
+solved the goal $\alpha_0 \to Int$. They are \texttt{length} and \texttt{length}.
+TODO
+
+
 % TODO reword
-Another issue comes into play when we're trying to synthesize 
-arguments to a component and the component's type contains 
-free variables (that are yet to be unified with a concrete
-type). 
+% Another issue comes into play when we're trying to synthesize 
+% arguments to a component and the component's type contains 
+% free variables (that are yet to be unified with a concrete
+% type). 
 % Another issue is that if we were to use the stored program type, which 
 % could contain free variables, as the type of the program, we would run into 
 % type clashes when trying to synthesize the program's arguments. 
-Say, for example, we generate and store a program that has $\alpha_3$ in 
-its type, and at at the time $\alpha_3$ is 
-free. When we retrieve this program later in the search, 
-$\alpha_3$ might now be in use for something else, and we would be linking 
-the two free variables unintentially and creating a clash. 
+% Say, for example, we generate and store a program that has $\alpha_3$ in 
+% its type, and at at the time $\alpha_3$ is 
+% free. When we retrieve this program later in the search, 
+% $\alpha_3$ might now be in use for something else, and we would be linking 
+% the two free variables unintentially and creating a clash. 
 
-To avoid this clash, instead of relying on the stored type, which in this case
-depends on $\alpha_3$, we infer the type
-of the retrieved program by generating a "fresh" type, $A_0$ for example, 
-independantly from the stored type, so that 
-the stored $\alpha_3$ can be discarded and there is no longer a conflict 
-with the current $\alpha_3$.
+% To avoid this clash, instead of relying on the stored type, which in this case
+% depends on $\alpha_3$, we infer the type
+% of the retrieved program by generating a "fresh" type, $A_0$ for example, 
+% independantly from the stored type, so that 
+% the stored $\alpha_3$ can be discarded and there is no longer a conflict 
+% with the current $\alpha_3$.
 
 
 % Now that 
