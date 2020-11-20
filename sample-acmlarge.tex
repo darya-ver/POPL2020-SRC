@@ -139,7 +139,7 @@
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
 % \title{Enumerative Type-Guided Program Synthesis for Higher-Order Polymorphic Language} % \thanks{Supported by organization x.}}
-\title{\textsc{Petsy}: Polymorphic Enumerative Type-guided Synthesis}
+\title{\textsc{Petsy}: Polymorphic Enumerative Type-Guided Synthesis}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -260,37 +260,37 @@ problem is a Haskell code snippet that has the desired type and works
 for the optionally given examples.
 
 
-% \subsection{Limitations with \textsc{Synquid}'s enumeration strategy}
 \subsection{Extending \textsc{Synquid}'s enumeration strategy} 
-% TODO thoughts on this section title change? 
 
 \textsc{Petsy} builds upon \textsc{Synquid}, which solves its synthesis task 
 by performing a top-down enemerative search and taking advantage of
 refinement types that are included in the initial type query. 
 
-\textsc{Synquid} synthesizes function applications in the following way. 
-Given a goal $?? :: T$ that is an application, split it into two 
-goals for the function and argument: $(?? :: \alpha \to T)$ and 
-$(?? :: \alpha)$. Repeating this process in the first goal lets us 
-use functions that take in more arguments:
+% \textsc{Synquid} synthesizes function applications in the following way. 
+% Given a goal $?? :: T$ that is an application, split it into two 
+% goals for the function and argument: $(?? :: \alpha \to T)$ and 
+% $(?? :: \alpha)$. Repeating this process in the first goal lets us 
+% use functions that take in more arguments:
 
-\[ (?? :: \alpha_0 \to T) (?? :: \alpha_0) \]
-\[ (?? :: \alpha_1 \to \alpha_0 \to T) (?? :: \alpha_1) (?? :: \alpha_0) \]
-\[ (?? :: \alpha_2 \to \alpha_1 \to \alpha_0 \to T) (?? :: \alpha_2) (?? :: \alpha_1) (?? :: \alpha_0) \]
+% \[ (?? :: \alpha_0 \to T) (?? :: \alpha_0) \]
+% \[ (?? :: \alpha_1 \to \alpha_0 \to T) (?? :: \alpha_1) (?? :: \alpha_0) \]
+% \[ (?? :: \alpha_2 \to \alpha_1 \to \alpha_0 \to T) (?? :: \alpha_2) (?? :: \alpha_1) (?? :: \alpha_0) \]
 
-This could repeat forever. To ensure search terminates, the components 
-decide the cutoff point: if the longest arrow type in the components is 
-$a \to b \to c \to d$, then we stop splitting the goal once we see 
-$\alpha_2 \to \alpha_1 \to \alpha_0 \to T$.
+% This could repeat forever. To ensure search terminates, the components 
+% decide the cutoff point: if the longest arrow type in the components is 
+% $a \to b \to c \to d$, then we stop splitting the goal once we see 
+% $\alpha_2 \to \alpha_1 \to \alpha_0 \to T$.
 
-However, this approach fails when type variables are instantiated with 
-arrow types. One concrete example is the query $(a \to b, a) \to b$ 
-with components $[\texttt{fst}, \texttt{snd}]$. The solution is 
+% TODO remove the cutoff discussion
+
+However, \textsc{Synquid} doesn't support cases where type variables are
+instantiated with  arrow types. One concrete example is the query $(a \to b,
+a) \to b$  with components $[\texttt{fst}, \texttt{snd}]$. The solution is 
 \texttt{fst p (snd p)}, which uses \texttt{fst} as a two-argument function, 
-which means \texttt{fst} must have filled the goal $\alpha_1 \to \alpha_0 \to T$. 
-However, \texttt{fst} and \texttt{snd} are one-argument functions -- 
-the cutoff is $\alpha_0 \to T$, so we never end up considering the goal 
-$\alpha_1 \to \alpha_0 \to T$.
+which means \texttt{fst} must have filled the goal $\alpha_1 \to \alpha_0 \to
+T$. However, \texttt{fst} and \texttt{snd} are one-argument functions --  the
+cutoff is $\alpha_0 \to T$, so we never end up considering the goal $\alpha_1
+\to \alpha_0 \to T$.
 
 Our solution is to use iterative deepening on the size of programs, 
 rather than depth first search. Because we only enumerate programs up 
@@ -313,51 +313,237 @@ already done. This makes memoization crucial to practical
 top-down enumeration, which \textsc{Myth} \cite{myth} was able to solve in a 
 first-order setting.
 In our polymorphic context, however, memoization is non-trivial. 
-With polymorphism, goal types can contain free 
-type variables. This causes a couple issues:
+With polymorphism, goal types can now contain free 
+type variables. This causes the following issues.
 
-\begin{enumerate}
-  \item \textbf{Type unificiation clashes:} With free type variables as
-        goals, each cached program could cause the
-        type variable to unify with a different type. For example,
-        if the goal is $\alpha_0 \to Int$, two possible solutions
-        are: \verb|length|, which has type $\forall \alpha . [\alpha] \to Int$,
-        resulting in $\alpha_0$ and $[\alpha]$ being unified, and 
-        \verb|incr|, which has type $Int \to Int$,
-        resulting in $\alpha_0$ and $Int$ being unified. How do we ensure 
-        that this won't cause any clashes when retrieving the problems from 
-        the memo map when later trying to synthesize component arguments?
-  \item \textbf{Redundancy:} At different points in the search, the free
-        variables will have different names. This means two different goals,
-        $\alpha_0 \to Int$ and $\alpha_1 \to Int$ would be syntactically different
-        but semantically equivalent. How do we avoid storing the same code 
-        snippets in multiple locations? 
-\end{enumerate}
+\vspace{2mm}
+\noindent \textbf{\textit{Redundancy.}} In \textsc{Petsy}, free variables 
+are represented as $\alpha$'s. If you look at 2 goals, $\alpha_0 \to Int$ 
+and $\alpha_1 \to Int$, even though they are syntactically different because of the subscripts,
+they are semantically equivalent because each is essentially saying "I want 
+a program that takes in anything and returns an \texttt{Int}". Because 
+of their semantic difference, however, they would be stored in 2 different 
+locations in the memo map, resulting in the exact same programs being stored
+in 2 different locations. 
+How can we avoid this and make these two goals equivalent?
 
-To resolve the first issue, we rename any incoming free type variables 
-to be "fresh" before using them as the map lookup key. That way, if 
+To resolve this, we rename any incoming free type variables 
+to be "fresh" $\beta$'s before using them as the map lookup key. That way, if 
 two different goals with free variables come in, say $\alpha_0 \to Int$ and 
 $\alpha_1 \to Int$, they will each be renamed to $\beta_0 \to Int$ 
 and $\beta_0 \to Int$, meaning that they will hit the same entry in the map,
 despite having different original names.
 
-To resolve the second issue, we use type inference to infer the type of 
-the retrieved programs as if it was an existing component. For example, if we
-retrieve a program \verb|length|, 
+\vspace{2mm}
+\noindent \textbf{\textit{Type unificiation clashes.}} 
+% TODO reword
+Another issue comes into play when we're trying to synthesize 
+arguments to a component and the component's type contains 
+free variables (that are yet to be unified with a concrete
+type). 
+% Another issue is that if we were to use the stored program type, which 
+% could contain free variables, as the type of the program, we would run into 
+% type clashes when trying to synthesize the program's arguments. 
+Say, for example, we generate and store a program that has $\alpha_3$ in 
+its type, and at at the time $\alpha_3$ is 
+free. When we retrieve this program later in the search, 
+$\alpha_3$ might now be in use for something else, and we would be linking 
+the two free variables unintentially and creating a clash. 
 
-... . % TODO explain how this works. 
-Similarly, if we retrieve a program \verb|incr|, 
-... . % TODO explain how this works.
-% TODO bring it all together to explain how it fixes issue.
+To avoid this clash, instead of relying on the stored type, which in this case
+depends on $\alpha_3$, we infer the type
+of the retrieved program by generating a "fresh" type, $A_0$ for example, 
+independantly from the stored type, so that 
+the stored $\alpha_3$ can be discarded and there is no longer a conflict 
+with the current $\alpha_3$.
 
-% table of data 
-\input{results}
+
+% Now that 
+% the map supports the 2 different goals $\alpha_0 \to Int$ and 
+% $\alpha_1 \to Int$ hitting the same entry in the map, there's an issue 
+% of what the type of the stored program is. Let's say that when we
+% synthesized $\alpha_0 \to Int$, there was no entry in the map and 
+% it synthesized it from scratch. It got the following program back
+
+
+% length :: [tau0] -> Int
+% goal: alpha0 -> Int 
+% alpha0 ~ [tau0]
+
+
+% To resolve the \textit{type unification clashes}, a potential solution could be to just store
+% the program's type in the memo map's value along with the program. This
+% causes issues, however, when the program's type depends on the free variables
+% that are part of the goal. Because of our solution to redundancy, 
+% we rename these free variables from $\alpha$'s to $\beta$'s, making the reference
+% the these free variables in the type meaningless outside the scope of the memo map.
+
+
+% ---
+
+% Consider the query
+
+%     (a -> Int) -> Int
+
+%     f _ = 0
+    
+% so we have (arg0 :: <a> . a -> Int) with goal type Int
+% split goal to get (?? :: alpha0 -> Int) (?? :: alpha0)
+% now arg0 fills in the first hole, so it gets stored in memo
+% as (arg0 :: alpha0 -> Int)
+% arg0 <- getUnified 
+% Program {
+
+%   typeOf = a -> Int
+% }
+
+% length :: [tau0] -> Int 
+% goal   :: alpha0 -> Int 
+
+% length :: [tau0] -> Int 
+%           alpha0 -> Int
+
+
+% reverse :: tau0 . [tau0] -> [tau0]
+% goal: alpha0 -> Int  
+% alpha0 ~ [Int]
+
+% memo map
+% alpha0 -> Int  ==>   head :: [tau0] -> tau0
+
+% head (head xs)
+% ( ) ( ) ( )
+
+
+% Quota 4
+% =========
+
+
+% dfs has been entered 78 times
+% memo map looks like:
+% {
+%   (IMode | quota 1 | must have [("arg0",Either (a) ((Either (a) (b))))] | ?? :: Either (beta1) (beta0)) ==> [
+%     arg0 :: Either (a) ((Either (a) (b)))
+%     ]
+%   (IMode | quota 1 | must have [] | ?? :: (beta0 -> Either (a) (b))) ==> [
+%     Data.Either.Left :: (a -> Either (a) (b))
+%     ]
+%   (IMode | quota 1 | must have [] | ?? :: (beta0 -> Either (a) (b))) ==> [
+%     Data.Either.Right :: (b -> Either (a) (b)), Data.Either.Left :: (a -> Either (a) (b))
+%     ]
+%   (EMode | quota 4 | must have [("arg0",Either (a) ((Either (a) (b))))] | ?? :: Either (a) (b)) ==> [
+%     Data.Either.either Data.Either.Right Data.Either.Left arg0 :: Either (a) (b)
+%     ]
+%   (EMode | quota 1 | must have [] | ?? :: (beta0 -> Either (a) (b))) ==> [
+%     Data.Either.Right :: (b -> Either (a) (b)), Data.Either.Left :: (a -> Either (a) (b))
+%     ]
+%   (EMode | quota 3 | must have [] | ?? :: (beta0 -> Either (a) (b))) ==> [
+%     Data.Either.either Data.Either.Right Data.Either.Left :: (Either (tau2) (tau1) -> Either (a) (b)), Data.Either.either Data.Either.Left Data.Either.Left :: (Either (tau2) (tau1) -> Either (a) (b))
+%     ]
+%   (EMode | quota 2 | must have [] | ?? :: (beta1 -> (beta0 -> Either (a) (b)))) ==> [
+%     Data.Either.either Data.Either.Right :: (((tau1 -> Either (a) (b))) -> (Either (tau2) (tau1) -> Either (a) (b))), Data.Either.either Data.Either.Left :: (((tau1 -> Either (a) (b))) -> (Either (tau2) (tau1) -> Either (a) (b)))
+%     ]
+%   (EMode | quota 1 | must have [] | ?? :: (beta2 -> (beta1 -> (beta0 -> Either (a) (b))))) ==> [
+%     Data.Either.either :: (((tau2 -> Either (a) (b))) -> (((tau1 -> Either (a) (b))) -> (Either (tau2) (tau1) -> Either (a) (b))))
+%     ]
+% }
+
+% f :: tau0 -> Int 
+% goal :: alpha0 -> Int
+
+% tau0 -> [tau0]
+
+% alpha0 -> [Int]
+
+% (f :: alpha0 -> alpha1 -> ___ ) (alpha0) (alpha1)
+
+% sub      tau0 -> Int ??? or alpha0 -> Int 
+
+
+
+
+
+
+
+
+
+
+% maybe later we encounter this same goal (Int) as a subgoal.
+
+% if we apply a function f of type Int -> alpha0 -> Int
+% then the goal becomes
+% f (?? :: Int) (?? :: alpha0)
+
+% then when we split, we get
+
+% f ((?? :: alpha1 -> Int) (?? :: alpha1)) (?? :: alpha0)
+
+% using memo map, we get arg0 :: alpha0 -> Int
+
+
+
+% ----
+% originally: alpha0 -> Int
+% store program: alpha0 -> Int
+
+% new goal: alpha1 -> Int
+% retrieve, type will be alpha0 -> Int
+
+% why inference if we can just do  (alpha1 -> Int) ~ (alpha0 -> Int)?
+% because consider this goal:
+
+% (_ :: alpha1 -> Int) (_ :: alpha1) (_ :: alpha0)
+
+% if we retrieve (f x :: alpha0 -> Int) from the memo map and unify
+%   (alpha1 -> Int) ~ (alpha0 -> Int)
+%   then we erroneously unify the (_ :: alpha1) (_ :: alpha0) outside of our goal
+
+% solution is to retrieve (f x :: alpha0 -> Int) and then magically rename its
+% type variables to something that doesn't clash with the outside
+
+% why inference if we could just choose to not store alpha0 -> Int,
+% instead always store whatever alpha0 maps to
+% so something like [tau0] -> Int
+% TODO
+% (length (length ... ))
+
+% ==> [fromJust :: Maybe tau0 -> tau0]
+
+
+% use type inference for this purpose! we get something like: (f x :: A0 -> Int)
+
+% and now we can unify (alpha1 -> Int) ~ (A0 -> Int) and have no problems :)
+% ----
+
+
+
+% To resolve the first issue, we use type inference to infer the type of 
+% the retrieved programs as if it was an existing component. For example, if we
+% retrieve a program \verb|length|, 
+
+% - type inference is used in our program this way
+% - it happens when we get a program from memo map
+% - however, it will have type variables that need to unify with other type variables
+% -      (_ :: alpha0 -> b) (_ :: alpha0)
+% -      
+% - e.g. (f :: a->b) (_ :: a) , when solving the second goal with memo map
+% -- we could get (g x) :: beta0, which we infer to become (g x) :: a
+
+% ... . % TODO explain how this works. 
+% Similarly, if we retrieve a program \verb|incr|, 
+% ... . % TODO explain how this works.
+% % TODO bring it all together to explain how it fixes issue.
+
+
+
 
 
 
 
 \section{Results}
 
+% table of data 
+\input{results}
 
 
 % TODO make sure that this is correct (where queries are from)
@@ -365,8 +551,9 @@ Similarly, if we retrieve a program \verb|incr|,
 We tested our results on 20 queries, that were based on the queries 
 from \textsc{Tygar}'s \cite{tygar} paper and ${\lambda^2}$ \cite{lambda2}, and 
 compared \textsc{Petsy} with \textsc{Tygar}, 
-which is the tool that most resembles our own. The results can be found in 
-Table \ref{tab:results}.
+which is the tool that most resembles our own in terms of input and outputs. 
+% TODO above sentence is weird and we need to tie tygar in better 
+The results can be found in Table \ref{tab:results}.
 
 
 % \subsection{\textsc{Tygar} vs. Memoization}
