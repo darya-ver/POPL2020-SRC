@@ -1,45 +1,22 @@
-,,tygar,with memoize,,
-Name,Query,Time (tygar),Time,speedup (ours vs theirs),
-appBoth,"(a -> b) -> (a -> c) -> a -> (b, c)",8.5,7.5,1.137333333,13.7%
-test,Bool -> a -> Maybe a,8.0,6.0,1.337815126,33.8%
-both,"(a -> b) -> (a, a) -> (b, b)",4.1,-,,-100.0%
-firstJust,a -> [Maybe a] -> a,18.4,6.5,2.824615385,182.5%
-mapEither,"(a -> Either b c) -> [a] -> ([b], [c])",4.8,3.2,1.49375,49.4%
-mapMaybes,(a -> Maybe b) -> [a] -> Maybe b,8.0,5.2,1.544230769,54.4%
-mergeEither,Either a (Either a b) -> Either a b,3.8,181.5,0.02077707357,-97.9%
-mbToEither,Maybe a -> b -> Either a b,12.7,4.2,3.026128266,202.6%
-cartProduct,"[a] -> [b] -> [[(a,b)]]",-,-,,-100.0%
-multiAppPair,"(a -> b, a -> c) -> a -> (b, c)",14.0,-,,-100.0%
-map,(a->b)->[a]->[b],2.1,3.7,0.5564516129,-44.4%
-repl-funcs,(a->b)->Int->[a->b],1.1,1.2,0.9411764706,-5.9%
-mbAppFirst,b -> (a -> b) -> [a] -> b,3.2,9.5,0.3396226415,-66.0%
-2partApp,(a->b)->(b->c)->[a]->[c],3.4,10.6,0.3163841808,-68.4%
-resolveEither,Either a b -> (a->b) -> b,4.0,10.3,0.3912621359,-60.9%
-dedupe,Eq a => [a] -> [a],19.0,-,,-100.0%
-multiApp,(a -> b -> c) -> (a -> b) -> a -> c,6.9,9.6,0.7165271967,-28.3%
-singleList,a -> [a],7.7,4.4,1.750566893,75.1%
-head-last,"[a] -> (a,a)",257.3,12.0,21.4093178,2040.9%
-head-rest,"[a] -> (a, [a])",1.5,3.3,0.4693251534,-53.1%
-pred-match,[a] -> (a -> Bool) -> Int,5.2,9.8,0.5269582909,-47.3%
-splitStr,String -> Char -> [String],1.3,4.3,0.3,-70.0%
-splitAtFirst,"a -> [a] -> ([a], [a])",-,-,,-100.0%
-hoogle01,(a -> b) -> [a] -> b,7.6,5.1,1.48046875,48.0%
-firstMatch,[a] -> (a -> Bool) -> a,6.0,6.9,0.8728323699,-12.7%
-firstMaybe,[Maybe a] -> a,2.8,3.8,0.75066313,-24.9%
-rights,[Either a b] -> Either a [b],1.9,2.6,0.73046875,-27.0%
-firstKey,"[(a,b)] -> a",1.5,3.4,0.4437869822,-55.6%
-firstRight,[Either a b] -> Either a b,4.4,9.6,0.4634655532,-53.7%
-maybe,Maybe a -> a -> Maybe a,2.8,5.7,0.5,-50.0%
-app3,(a -> b -> c -> d) -> a -> c -> b -> d,1.9,3.8,0.5,-50.0%
-appendN,Int -> [a] -> [a],16.3,22.6,0.7226890756,-27.7%
-zipWithResult,"(a->b)->[a]->[(a,b)]",268.1,10.8,24.87105751,2387.1%
-applyNtimes,(a->a) -> a -> Int -> a,30.2,18.0,1.675540765,67.6%
-eitherTriple,Either a b -> Either a b -> Either a b,42.4,27.3,1.553643354,55.4%
-pipe,[(a -> a)] -> (a -> a),4.5,88.8,0.05032083755,-95.0%
-lookup,"Eq a => [(a,b)] -> a -> b",2.0,7.9,0.2582697201,-74.2%
-mbElem,Eq a => a -> [a] -> Maybe a,3.7,295.6,0.01258414803,-98.7%
-areEq,Eq a => a -> a -> Maybe a,-,-,,-100.0%
-applyPair,"(a -> b, a) -> b",4.7,2.0,2.310344828,131.0%
-flatten,[[[a]]] -> [a],4.7,1.4,3.448529412,244.9%
-takeNdropM,"Int -> Int -> [a] -> ([a], [a])",-,-,,-100.0%
-indexesOf,"([(a,Int)] -> [(a,Int)]) -> [a] -> [Int] -> [Int]",158.2,-,,-100.0%
+,,tygar,with memoize,,,,
+Name,Query,Time (tygar),Time,speedup (ours vs theirs),,difference,
+test,Bool -> a -> Maybe a,8.0,6.0,1.337815126,33.78%,-2.0,1
+firstJust,a -> [Maybe a] -> a,18.4,6.5,2.824615385,182.46%,-11.9,0
+mapEither,"(a -> Either b c) -> [a] -> ([b], [c])",4.8,3.2,1.49375,49.38%,-1.6,1
+mapMaybes,(a -> Maybe b) -> [a] -> Maybe b,8.0,5.2,1.544230769,54.42%,-2.8,1
+mergeEither,Either a (Either a b) -> Either a b,3.8,181.5,0.02077707357,-97.92%,177.7,0
+map,(a->b)->[a]->[b],2.1,3.7,0.5564516129,-44.35%,1.7,0
+repl-funcs,(a->b)->Int->[a->b],1.1,1.2,0.9411764706,-5.88%,0.1,0
+mbAppFirst,b -> (a -> b) -> [a] -> b,3.2,9.5,0.3396226415,-66.04%,6.3,0
+resolveEither,Either a b -> (a->b) -> b,4.0,10.3,0.3912621359,-60.87%,6.3,0
+multiApp,(a -> b -> c) -> (a -> b) -> a -> c,6.9,9.6,0.7165271967,-28.35%,2.7,0
+singleList,a -> [a],7.7,4.4,1.750566893,75.06%,-3.3,1
+head-last,"[a] -> (a,a)",257.3,12.0,21.4093178,2040.93%,-245.3,1
+firstMatch,[a] -> (a -> Bool) -> a,6.0,6.9,0.8728323699,-12.72%,0.9,0
+rights,[Either a b] -> Either a [b],1.9,2.6,0.73046875,-26.95%,0.7,0
+firstKey,"[(a,b)] -> a",1.5,3.4,0.4437869822,-55.62%,1.9,0
+firstRight,[Either a b] -> Either a b,4.4,9.6,0.4634655532,-53.65%,5.1,0
+zipWithResult,"(a->b)->[a]->[(a,b)]",268.1,10.8,24.87105751,2387.11%,-257.3,1
+applyNtimes,(a->a) -> a -> Int -> a,30.2,18.0,1.675540765,67.55%,-12.2,1
+mbElem,Eq a => a -> [a] -> Maybe a,3.7,295.6,0.01258414803,-98.74%,291.9,0
+flatten,[[[a]]] -> [a],4.7,1.4,3.448529412,244.85%,-3.3,1

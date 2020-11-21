@@ -2,30 +2,30 @@
 \tiny
 \caption{\textsc{Tygar} vs. \textsc{Petsy}}
 \label{tab:results}
-\begin{tabular}{c c c | r | r | r}
+\begin{tabular}{|l |l l| r | r |}
 \hline
-N & Name & Query   &  Time (s): \textsc{Tygar}	& Time (s): \textsc{Petsy} & Speedup \\ 
+N & Name & Query   &  \textsc{Tygar}	& \textsc{Petsy} \\ 
 \hline
-1 & appBoth & (a -> b) -> (a -> c) -> a -> (b, c) & 8.5 & 7.5 & 1.137333333 \\ 
-2 & test & Bool -> a -> Maybe a & 8.0 & 6.0 & 1.337815126 \\ 
-3 & both & (a -> b) -> (a, a) -> (b, b) & 4.1 & - &  \\ 
-4 & firstJust & a -> [Maybe a] -> a & 18.4 & 6.5 & 2.824615385 \\ 
-5 & mapEither & (a -> Either b c) -> [a] -> ([b], [c]) & 4.8 & 3.2 & 1.49375 \\ 
-6 & mapMaybes & (a -> Maybe b) -> [a] -> Maybe b & 8.0 & 5.2 & 1.544230769 \\ 
-7 & mergeEither & Either a (Either a b) -> Either a b & 3.8 & 181.5 & 0.02077707357 \\ 
-8 & mbToEither & Maybe a -> b -> Either a b & 12.7 & 4.2 & 3.026128266 \\ 
-9 & cartProduct & [a] -> [b] -> [[(a,b)]] & - & - &  \\ 
-10 & multiAppPair & (a -> b, a -> c) -> a -> (b, c) & 14.0 & - &  \\ 
-11 & map & (a->b)->[a]->[b] & 2.1 & 3.7 & 0.5564516129 \\ 
-12 & repl-funcs & (a->b)->Int->[a->b] & 1.1 & 1.2 & 0.9411764706 \\ 
-13 & mbAppFirst & b -> (a -> b) -> [a] -> b & 3.2 & 9.5 & 0.3396226415 \\ 
-14 & 2partApp & (a->b)->(b->c)->[a]->[c] & 3.4 & 10.6 & 0.3163841808 \\ 
-15 & resolveEither & Either a b -> (a->b) -> b & 4.0 & 10.3 & 0.3912621359 \\ 
-16 & dedupe & Eq a => [a] -> [a] & 19.0 & - &  \\ 
-17 & multiApp & (a -> b -> c) -> (a -> b) -> a -> c & 6.9 & 9.6 & 0.7165271967 \\ 
-18 & singleList & a -> [a] & 7.7 & 4.4 & 1.750566893 \\ 
-19 & head-last & [a] -> (a,a) & 257.3 & 12.0 & 21.4093178 \\ 
-20 & head-rest & [a] -> (a, [a]) & 1.5 & 3.3 & 0.4693251534 \\ 
+1 & test & Bool -> a -> Maybe a & 8.0 s & 6.0 s \\ 
+2 & firstJust & a -> [Maybe a] -> a & 18.4 s & 6.5 s \\ 
+3 & mapEither & (a -> Either b c) -> [a] -> ([b], [c]) & 4.8 s & 3.2 s \\ 
+4 & mapMaybes & (a -> Maybe b) -> [a] -> Maybe b & 8.0 s & 5.2 s \\ 
+5 & mergeEither & Either a (Either a b) -> Either a b & 3.8 s & 181.5 s \\ 
+6 & map & (a->b)->[a]->[b] & 2.1 s & 3.7 s \\ 
+7 & repl-funcs & (a->b)->Int->[a->b] & 1.1 s & 1.2 s \\ 
+8 & mbAppFirst & b -> (a -> b) -> [a] -> b & 3.2 s & 9.5 s \\ 
+9 & resolveEither & Either a b -> (a->b) -> b & 4.0 s & 10.3 s \\ 
+10 & multiApp & (a -> b -> c) -> (a -> b) -> a -> c & 6.9 s & 9.6 s \\ 
+11 & singleList & a -> [a] & 7.7 s & 4.4 s \\ 
+12 & head-last & [a] -> (a,a) & 257.3 s & 12.0 s \\ 
+13 & firstMatch & [a] -> (a -> Bool) -> a & 6.0 s & 6.9 s \\ 
+14 & rights & [Either a b] -> Either a [b] & 1.9 s & 2.6 s \\ 
+15 & firstKey & [(a,b)] -> a & 1.5 s & 3.4 s \\ 
+16 & firstRight & [Either a b] -> Either a b & 4.4 s & 9.6 s \\ 
+17 & zipWithResult & (a->b)->[a]->[(a,b)] & 268.1 s & 10.8 s \\ 
+18 & applyNtimes & (a->a) -> a -> Int -> a & 30.2 s & 18.0 s \\ 
+19 & mbElem & Eq a => a -> [a] -> Maybe a & 3.7 s & 295.6 s \\ 
+20 & flatten & [[[a]]] -> [a] & 4.7 s & 1.4 s \\ 
 \hline
 \end{tabular}
 \end{table*}
