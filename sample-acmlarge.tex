@@ -195,11 +195,11 @@ solution to this problem is:
   \verb|\f x -> fromMaybe (\y -> y) f x|
 \end{equation}
 
-\noindent which either extracts the function from the \verb|Maybe| and applies it to x, 
-or applies the identity function to \verb|x| if the \verb|Maybe| is \verb|Nothing|
+\noindent which either extracts the function from a \verb|Just| and applies it to \verb|x|, 
+or applies the identity function to \verb|x| when given \verb|Nothing|
 (which is the same as returning \verb|x| unchanged). As a component-based program, 
-(\ref{solution1}) is idiomatic and concise and doesn't rely on pattern matching. It is potentially 
-non-intuitive, though, and could be difficult for programmers to find on their own. 
+(\ref{solution1}) is idiomatic and concise and doesn't rely on if-else or pattern matching.
+But finding it is potentially non-intuitive.
 
 % We set out to build an enumerative synthesis tool that . 
 % TODO this paragraph needs to be worded better.
@@ -227,21 +227,21 @@ like we'd like \textsc{Petsy} to.
 \noindent \textbf{\textit{\textsc{Tygar}.}} \textsc{Tygar} \cite{tygar} uses Petri nets to 
 tackle type-guided Haskell program synthesis, and is remarkable in that 
 it also supports polymorphic types, typeclasses, and can check 
-user-provided input-output examples. Because of its use of Petri nets, 
-however, it has to reduce everything to first order, meaning that 
-it can't make use of lambdas, which limits the space of programs that
-\textsc{Tygar} can pull from.
+user-provided input-output examples. However, its encoding into Petri nets 
+reduces the type system to first-order, so programs with lambdas are not in the
+space of programs that \textsc{Tygar} can pull from.
 
 \vspace{2mm}
 \noindent \textbf{\textit{SYNQUID.}} \textsc{Synquid} \cite{synquid} makes 
 use of an enumerative search approach, lambdas, and polymorphism. 
 Its type system, however, restricts type variables (represented here with $\alpha$)
-from unifying with arrow types. This prevents, for example, 
-\texttt{Maybe} ${a \to a}$ 
-and ${\alpha_1 \to \alpha_0 \to b}$ from unifying, even though in theory
-they could if \texttt{Maybe} $a$ unified with $\alpha_1$, and $a$ unfied 
-with $\alpha_0 \to b$. This leads to some programs being unreachable
-and, in the context of higher-order components, limits the search space. 
+from unifying with arrow types. For example, this prevents
+\texttt{Maybe} ${a \to a}$ from unifying with
+${\alpha_1 \to \alpha_0 \to b}$, even though in theory
+they could if \texttt{Maybe} $a$ unified with $\alpha_1$, and $a$ unified 
+with $\alpha_0 \to b$.
+This means certain programs that unify type variables with arrow types
+are not in the search space for \textsc{Synquid}.
 
 
 
@@ -267,7 +267,7 @@ for the optionally given examples.
 % type variables. We found this restriction not to be too limiting in
 % practice.
 
-\textsc{Synquid} also solves itsw synthesis task via top-down enumerative search.
+\textsc{Synquid} also solves its synthesis task via top-down enumerative search.
 The task it solves is similar, the only difference being that the types are
 not just polymorphic -- they are liquid (refinement) types. Among other
 reasons, \textsc{Synquid}'s method of supporting refinements requires it to
@@ -276,40 +276,35 @@ variables. This is made possible by restricting type variables to not unify
 with arrow types. Because \textsc{Petsy} employs an enumerative search method
 instead, there is no reason to have this restriction.
 
-Petsy is built on top of Synquid, ignoring all the refinement type logic since
-our synthesis task does not involve refinements. We also change the type system
-such that type variables are no longer restricted to unify only with scalar types
--- type variables can now unify with arrows.
-This means \textsc{Petsy} can synthesize a wider range of programs. One
+\textsc{Petsy} is built on top of \textsc{Synquid}, ignoring all the refinement
+type logic since our synthesis task does not involve refinements. We also
+change the type system by letting type variables unify with arrows.
+This means \textsc{Petsy} can synthesize a wider range of programs.
+Defining $::$ to mean ``has type'', one
 concrete example is the query $(a \to b, a) \to b$, with components
-$[\texttt{fst}$ of type $\forall x\ldotp\forall y\ldotp (x,y)\to x, \texttt{snd}$
-of type $\forall x\ldotp\forall y\ldotp (x,y)\to y]$. The solution is \texttt{fst p
+$[\texttt{fst} :: \forall x\ldotp\forall y\ldotp (x,y)\to x, \texttt{snd} :: \forall x\ldotp\forall y\ldotp (x,y)\to y]$. The solution is \texttt{fst p
 (snd p)}, which is only possible if $\forall x\ldotp\forall y\ldotp (x,y)$ in
-the type of the component $\texttt{fst}$, $\forall x\ldotp\forall y\ldotp (x,y)\to x$,
-unifies with the type of $p$, $(a \to b, a)$. Because the type variable $x$ needs to unify
-with the arrow type $a \to b$, \textsc{Petsy} is able to synthesize this
-while \textsc{Synquid} cannot.
+$\texttt{fst} :: \forall x\ldotp\forall y\ldotp (x,y)\to x$,
+unifies with $p :: (a \to b, a)$. Because the type variable $x$ needs to unify
+with the arrow type $a \to b$, \textsc{Petsy} is able to consider the program
+\texttt{fst p (snd p)} while \textsc{Synquid} cannot.
 
 \subsection{Memoization (caching subproblems during enumeration)}
 
-Because of its enumerative and iterative deepening qualities, \textsc{Petsy} 
-generates many repeated subproblems
-over the course of the search, wasting a lot of time redoing searches it has
-already done. This makes memoization crucial to practical 
+The nature of enumerative search with iterative deepening is that many
+repeated subproblems are generated over the course of the search.
+Redoing the same subproblems wastes a lot of time.
+This makes memoization crucial to practical 
 top-down enumeration, which \textsc{Myth} \cite{myth} is able to solve in a 
 first-order setting.
 
-In our polymorphic context, however, memoization is non-trivial, as goal types
-can now contain free type variables. 
-
-Memoization is mechanically difficult to deal with in a polymorphic setting,
-because we have to be careful when dealing with goals that overlap (example:
+However, memoization is mechanically difficult to deal with
+when facing polymorphic type variables.
+We must be careful when dealing with goals that overlap, for example:
 $\alpha_0 \to \texttt{Int}$ and $\alpha_1 \to \texttt{Int}$ and
-$(\texttt{Int} \to \texttt{Int}) \to \texttt{Int}$).
-However, we discovered that the following methods resolve these problems.
-
-% \begin{enumerate}
-%   \item 
+$(\texttt{Int} \to \texttt{Int}) \to \texttt{Int}$.
+We discovered the following methods to resolve problems that arose due
+to this complexity.
 
 \subsubsection{Overlapping Goals}
 
@@ -322,145 +317,23 @@ the second becomes $\beta_1$, and so on.
 This treats both goals as $\beta_0 \to \texttt{Int}$,
 making syntactically different goals semantically equivalent.
   
-  % \item 
 \subsubsection{Preserving Unification}
-The previous method with $\beta$'s introduces a small issue in program retrieval.
-Consider how
-the program \texttt{length} of type $[\alpha_1] \to \texttt{Int}$
-solves the goal $\alpha_0 \to \texttt{Int}$.
-This unifies $[\alpha_1]$ with $\alpha_0$, which is important information for
-\textsc{Synquid}'s algorithm.
-With memoization, however, \texttt{length} gets stored in the cache for the goal
-$\beta_0 \to \texttt{Int}$.
-When \texttt{length} is retrieved from the cache to solve $\alpha_0 \to \texttt{Int}$,
-we lose the fact that $\alpha_0$ now unifies with a list,
-as this information is never stored.
+The previous method with $\beta$'s introduces a small issue in program
+retrieval. Consider how the program \texttt{length} of type $[\alpha_1] \to
+\texttt{Int}$ solves the goal $\alpha_0 \to \texttt{Int}$. This unifies
+$[\alpha_1]$ with $\alpha_0$, which is important information for
+\textsc{Synquid}'s algorithm. With memoization, however, the cache stores
+\texttt{length} for the more general goal $\beta_0 \to \texttt{Int}$. When
+\texttt{length} is retrieved from the cache to solve $\alpha_0 \to
+\texttt{Int}$, we lose the fact that $\alpha_0$ now unifies with a list, as
+this information is never stored.
 
 Instead of worrying about how to store this information,
 we decided to simply unify the type of \texttt{length}, $[\alpha_1] \to \texttt{Int}$,
 with the goal type $\alpha_0 \to \texttt{Int}$
 at the time of retrieval. This recovers the unification information.
-Obtaining the type of the retrieved program is easy when the program is a single
-% component. We use \textit{type inference} to obtain the type so that it can 
-
-component, but it is harder for larger programs. So in general, we obtain the type 
-with \textit{type inference}.
-% TODO still don't like this, but let's stop stressing over a single sentence
-
-
-. We use \textit{type inference} to obtain the type so that it can 
-% be generalized across single and multi-component programs. 
-work for single and multi-component programs. 
-
-% To keep in consistent across single and multiple component programs
-% (like \texttt{map length}), we use \textit{type inference} to obtain the type.
-
-
-% To keep in consistent across single and multiple component programs
-% can i reaplce this with
-% In general, k
-
-% , it becomes more complicated when programs have more than a single component. 
-% In these situations, like \texttt{map length}, we will use \textit{type inference} to 
-% obtain the type.
-
-% % i tried to make it sound like single component is not a special case
-% % i think i failed lol single component still sounded like it was special
-% hmmm kk
-% lemme redo 
-% but we can do this for programs in general (like \texttt{map length})
-% by obtaining the type with type inference.
-  
-% \end{enumerate}
-
-
-
-
-
-% because of free variables, it's important to know how the free variables are changed
-% after generation of program. instead of worrying about how to store this information
-% int he map, we decided to simply infer the types after retrieval
-
-% \vspace{2mm}
-% \noindent \textbf{\textit{Redundancy.}} In \textsc{Petsy}, free variables 
-% are represented as $\alpha$'s. If you look at 2 goals, $\alpha_0 \to Int$ 
-% and $\alpha_1 \to Int$, even though they are syntactically different (they have 
-% subscripts), 
-% they are semantically equivalent because each is essentially saying "I want 
-% a program that takes in anything and returns an \texttt{Int}". Because 
-% of their semantic difference, however, they would be stored in 2 different 
-% locations in the memo map, resulting in the exact same programs being stored
-% in 2 different locations. 
-% How can we avoid this and make these two goals equivalent?
-
-% To resolve this, we rename any incoming free type variables 
-% to be "fresh" $\beta$'s before using them as the map lookup key. That way, if 
-% two different goals with free variables come in, say $\alpha_0 \to Int$ and 
-% $\alpha_1 \to Int$, they will each be renamed to $\beta_0 \to Int$ 
-% and $\beta_0 \to Int$, meaning that they will hit the same entry in the map,
-% despite having different original names.
-
-% THIS PART is the same as your first list item IMO ^ 
-
-
-
-
-
-% \vspace{2mm}
-% \noindent \textbf{\textit{Type Clashes.}} % todo dif title name
-
-% % When \textsc{Petsy} synthesizes a function application, it tries to match
-% % the function type with its arguments. For example, if the function is type
-% % a -> b, then the type of the argument must unify with a. An issue arises if
-% % we retrieve this argument from the memo map -- its argument must unify with a
-
-
-% % This may cause an issue with
-% % retrieving from memo because the type of the program we 
-
-
-% ---
-
-% Another issue comes into play when we're trying to synthesize 
-% arguments to a component. This is when the type of the component 
-% comes into play, as we need it to know the type of its arguments. 
-% One solution to this is to simply store the type along with the 
-% program in the memo map. The presence of type variables in the stored 
-% type will cause type clashes, however, causing this naive solution 
-% to have undesired outcomes. 
-
-% Say, for example, we generate and store a program whose type still contains 
-% a free variable, $\alpha$. And let's say later in the search, we 
-% retrieve this program and use its stored type as the actual type. The 
-% problem arises when at \textit{that second point in the search}, $\alpha$
-% is used in a type query that was never supposed to linked to this retrieved
-% program, but now is because the stored type contains $\alpha$.
-
-% Say, for example, we generate and store a program whose type still contains 
-% a free variable, $\alpha_3$. And let's say later in the search, we 
-% retrieve this program and use its stored type as the actual type. The 
-% problem arises when at \textit{that second point in the search}, $\alpha_3$
-% is used in a type query that was never supposed to linked to this retrieved
-% program, but now is because the stored type contains $\alpha_3$ 
-% ($\alpha_3$ is reused because of backtracking in our search allowing for 
-% duplicate free variable names in order to avoid massive names like $\alpha_{75000}$). 
-
-
-% $\alpha_3$ in 
-% its type, and at at the time $\alpha_3$ is 
-% free. But let's 
-% When we retrieve this program later in the search, 
-% $\alpha_3$ might now be in use in one of the arguments that wasn't
-% originally tied to the component, and we would be linking 
-% the two free variables unintentially and creating a clash. 
-
-% To avoid this clash, instead of relying on the stored type, which in this case
-% depends on $\alpha$, we infer the type
-% of the retrieved program by generating a "fresh" type, $A_0$ for example, 
-% independantly from the stored type, so that 
-% the stored $\alpha$ can be discarded and there is no longer a conflict 
-% with the current $\alpha$.
-
+Although obtaining the type \texttt{length} is easy, as it is a single component,
+in general we obtain the type of the retrieved program via \textit{type inference}.
 
 
 
@@ -485,10 +358,14 @@ The results can be found in Table \ref{tab:results}.
 \vspace{2mm}
 \noindent \textbf{\textit{Analysis.}} 
 % TODO re-write this once we have more accurate test bench
-\textsc{Petsy} did better than \textsc{Tygar} in 9 out of the 20 tests. 
-While there are some tests that we do much better in -- \#12 and \#17 --
-and some tests that we do much worse in -- \#5 and \#19 -- both tools perform
-relatively the same and are quite comparable.
+\textsc{Petsy} and \textsc{Tygar} are comparable.
+While there are some tests that \textsc{Petsy} does much better in -- \#12 and \#17 --
+and some tests that \textsc{Petsy} does much worse in -- \#5 and \#19 -- both tools perform
+about equally well (within a few seconds) on the other benchmarks.
+% \textsc{Petsy} did better than \textsc{Tygar} in 9 out of the 20 tests. 
+% While there are some tests that we do much better in -- \#12 and \#17 --
+% and some tests that we do much worse in -- \#5 and \#19 -- both tools perform
+% relatively the same and are quite comparable.
 
 % Test \#(TODO) shows how we are able to synthesize lambdas whereas \textsc{Tygar} cannot.
 
@@ -500,9 +377,9 @@ faster (see \nameref{future}).
 
 \vspace{2mm}
 \noindent \textbf{\textit{Quality of Results.}} For the most part, both \textsc{Tygar} 
-and \textsc{Petsy} returned the same programs. If they didn't return the same program,
-the programs were equivalent, so the differences between the results of the two
-tools is insignificant. 
+and \textsc{Petsy} returned the same programs. If they didn't return the same program
+(because \textsc{Petsy} found a solution using lambdas),
+the programs were equivalent, so there is no significant difference in program quality between the two tools.
 
 \section{Future Work}
 \label{future}
