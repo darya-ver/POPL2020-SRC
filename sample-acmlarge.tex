@@ -273,8 +273,11 @@ not just polymorphic -- they are liquid (refinement) types. Among other
 reasons, \textsc{Synquid}'s method of supporting refinements requires it to
 determine whether a type is a scalar without having to substitute its type
 variables. This is made possible by restricting type variables to not unify
-with arrow types. Because \textsc{Petsy} employs an enumerative search method
-instead, there is no reason to have this restriction.
+with arrow types. This, however, is only relevant in the context of refinement types, 
+so there is no reason to have this restriction in our context. 
+
+% Because \textsc{Petsy} employs an enumerative search method
+% instead, there is no reason to have this restriction.
 
 \textsc{Petsy} is built on top of \textsc{Synquid}, ignoring all the refinement
 type logic since our synthesis task does not involve refinements. We also
@@ -359,8 +362,8 @@ The results can be found in Table \ref{tab:results}.
 \noindent \textbf{\textit{Analysis.}} 
 % TODO re-write this once we have more accurate test bench
 \textsc{Petsy} and \textsc{Tygar} are comparable.
-While there are some tests that \textsc{Petsy} does much better in -- \#12 and \#17 --
-and some tests that \textsc{Petsy} does much worse in -- \#5 and \#19 -- both tools perform
+While there are some tests that \textsc{Petsy} does much \textit{better} in -- \#12 and \#17 --
+and some tests that \textsc{Petsy} does much \textit{worse} in -- \#5 and \#19 -- both tools perform
 about equally well (within a few seconds) on the other benchmarks.
 % \textsc{Petsy} did better than \textsc{Tygar} in 9 out of the 20 tests. 
 % While there are some tests that we do much better in -- \#12 and \#17 --
