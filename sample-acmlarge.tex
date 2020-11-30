@@ -147,8 +147,18 @@
 %% Of note is the shared affiliation of the first two authors, and the
 %% "authornote" and "authornotemark" commands
 %% used to denote shared contribution to the research.
+% Each submission (referred to as “abstract” below) should include the 
+% * student author’s name and e-mail address; 
+% % institutional affiliation; 
+% research advisor’s name; 
+% ACM student member number; 
+% category (undergraduate or graduate); 
+% research title; 
+% and an extended abstract addressing the following:
 \author{Darya Verzhbinsky}
-% \authornote{Both authors contributed equally to this research.}
+\authornote{
+  Undergraduate Student; Advisor: Nadia Polikarpova; ACM Number: 2802151
+}
 \email{dverzhbi@ucsd.edu}
 % \orcid{1234-5678-9012}
 % \author{G.K.M. Tobin}
@@ -157,8 +167,11 @@
 \affiliation{%
   \institution{University of California, San Diego}
 }
-
+% 2018040
 \author{Daniel Wang}
+\authornote{
+  Undergraduate Student; Advisor: Nadia Polikarpova; ACM Number: 2018040
+}
 \affiliation{%
   \institution{University of California, San Diego}
 }
@@ -169,79 +182,101 @@
 %% information and builds the first part of the formatted document.
 \maketitle
 
+% \section{Abstract}
+
+% We provide a solution to the problem of polymorphic type-guided synthesis via enumerative search.
+% Related problems have been explored before, in Myth, Tygar, and Synquid.
+% Our synthesis \textit{problem} consists of a component library, a query type,
+% and optional input-output examples. A \textit{solution} to the synthesis 
+% problem is a Haskell code snippet that only contains applications, 
+% $\lambda$-abstractions, and variables (including components), and
+% that has the desired type and works 
+% for the optionally given examples. We evaluated Petsy on 20 benchmarks that we took
+% from Tygar's paper. 
+% We used the same set of 130 components in all experiments. When comparing Petsy 
+% with Tygar, Petsy, both tools perform quite similarly in terms of 
+% speed and solution quality.  
+
+% Because \textsc{Tygar}'s search 
+% space was most similar to ours, we chose to compare \textsc{Petsy} with \textsc{Tygar}.
+% The results can be found in Table \ref{tab:results}, and we offer some ideas for improvement.
+
 \section{Introduction}
 
 
 Consider the task of implementing a function that has the following 
-description: “If I give you a function, apply it to \verb|x|. Otherwise, 
-return \verb|x| unchanged.” We can translate this function description 
+description: ``If I give you a function, apply it to \verb|x|. Otherwise, 
+return \verb|x| unchanged.'' We can translate this function description 
 into a Haskell type signature as follows: 
 
-\begin{equation}
-  \label{query1}
+\begin{equation*}
+  % \label{query1}
   f:\texttt{Maybe}~(a \to a) \to x:a \to a
-\end{equation}
+\end{equation*}
 
 % \begin{lstlisting}
 %   f:\text{Maybe} (a \to a) \to x:a \to a
 % \end{lstlisting}
 
 \noindent where \verb|f| represents a possible function (hence the \verb|Maybe| type), and 
-\verb|x| is of the same type that \verb|f| takes in and returns. A possible 
-solution to this problem is:
+\verb|x| is of the same type that \verb|f| takes in and returns. 
+Say that we have a component \texttt{fromMaybe} that has type $a \to \texttt{Maybe} ~a \to a$.
+A possible solution to this problem is:
 
 \begin{equation}
-  \label{solution1}
-  \verb|\f x -> fromMaybe (\y -> y) f x|
+  \label{applyMaybe}
+  \verb|applyMaybe f x = fromMaybe (\y -> y) f x|
 \end{equation}
 
 \noindent which either extracts the function from a \verb|Just| and applies it to \verb|x|, 
 or applies the identity function to \verb|x| when given \verb|Nothing|
-(which is the same as returning \verb|x| unchanged). As a component-based program, 
-(\ref{solution1}) is idiomatic and concise and doesn't rely on if-else or pattern matching.
+(which is the same as returning \verb|x| unchanged). As a component-based program,
+\texttt{applyMaybe} (\ref{applyMaybe}) is idiomatic and concise and doesn't rely on if-else or pattern matching.
 But finding it is potentially non-intuitive.
 
 % We set out to build an enumerative synthesis tool that . 
 % TODO this paragraph needs to be worded better.
 We present \textsc{Petsy}, a tool that allows users to provide a type signature and 
 optional examples, and get back a code snippet 
-that consists of a composition of Haskell library functions. This allows
+that consists of a composition of Haskell library functions. 
+This allows
 users to speed up their programming by using our tool to synthesize small 
 Haskell programs instead of doing it themselves. 
-
-
+One advantage over other existing tools is that
+\textsc{Petsy} is able to synthesize \texttt{applyMaybe} (\ref{applyMaybe}) through a top-down,
+enumerative type-guided search algorithm.
 
 
 \section{Related Work}
 
-The problem we are exploring is polymorphic type-guided synthesis via 
+The problem we explore is polymorphic type-guided synthesis via 
 enumerative search. Related problems have been explored before. 
 
 \vspace{2mm}
 \noindent \textbf{\textit{MYTH.}} \textsc{Myth} \cite{myth}
 already explores enumerative search for 
 type-directed synthesis, but it does not support polymorphism or typeclasses 
-like we'd like \textsc{Petsy} to. 
+like \textsc{Petsy} does, making it unable to synthesize \texttt{applyMaybe} (\ref{applyMaybe}).
 
 \vspace{2mm}
 \noindent \textbf{\textit{\textsc{Tygar}.}} \textsc{Tygar} \cite{tygar} uses Petri nets to 
 tackle type-guided Haskell program synthesis, and is remarkable in that 
-it also supports polymorphic types, typeclasses, and can check 
-user-provided input-output examples. However, its encoding into Petri nets 
-reduces the type system to first-order, so programs with lambdas are not in the
+it also supports polymorphic types and typeclasses.
+% , and can check user-provided input-output examples. 
+However, its encoding into Petri nets 
+reduces the type system to first-order, so programs with $\lambda$-abstractions are not in the
 space of programs that \textsc{Tygar} can pull from.
 
 \vspace{2mm}
 \noindent \textbf{\textit{SYNQUID.}} \textsc{Synquid} \cite{synquid} makes 
-use of an enumerative search approach, lambdas, and polymorphism. 
-Its type system, however, restricts type variables (represented here with $\alpha$)
-from unifying with arrow types. For example, this prevents
-\texttt{Maybe} ${a \to a}$ from unifying with
-${\alpha_1 \to \alpha_0 \to b}$, even though in theory
-they could if \texttt{Maybe} $a$ unified with $\alpha_1$, and $a$ unified 
-with $\alpha_0 \to b$.
-This means certain programs that unify type variables with arrow types
-are not in the search space for \textsc{Synquid}.
+use of an enumerative search approach, $\lambda$-abstractions, and polymorphism, but 
+is unable to solve our running example \texttt{applyMaybe} (\ref{applyMaybe}).
+This is because its type system restricts type variables (represented here with $\alpha$)
+from unifying with arrow types. In particular,
+\texttt{Maybe} ${a \to a}$ cannot unify with
+${\alpha_1 \to \alpha_0 \to b}$, 
+as that would require $a$ to unify with $\alpha_0 \to b$. We discuss this in depth 
+in \ref{synquid_explanation}.
 
 
 
@@ -254,11 +289,13 @@ are not in the search space for \textsc{Synquid}.
 
 Our synthesis \textit{problem} consists of a component library, a query type,
 and optional input-output examples. A \textit{solution} to the synthesis 
-problem is a Haskell code snippet that has the desired type and works 
+problem is a Haskell code snippet that only contains applications, 
+$\lambda$-abstractions, and variables (including components), and
+that has the desired type and works 
 for the optionally given examples.
 
 \subsection{Extending \textsc{Synquid}'s enumeration strategy} 
-
+\label{synquid_explanation}
 % from synquid paper:
 % SYNQUID features ML-style polymorphism, where type variables are universally
 % quantified at the outermost level to yield type schemas. Unlike ML, we
@@ -281,11 +318,12 @@ so there is no reason to have this restriction in our context.
 
 \textsc{Petsy} is built on top of \textsc{Synquid}, ignoring all the refinement
 type logic since our synthesis task does not involve refinements. We also
-change the type system by letting type variables unify with arrows.
+make the type system more expressive by letting type variables unify with arrows.
 This means \textsc{Petsy} can synthesize a wider range of programs.
 Defining $::$ to mean ``has type'', one
 concrete example is the query $(a \to b, a) \to b$, with components
-$[\texttt{fst} :: \forall x\ldotp\forall y\ldotp (x,y)\to x, \texttt{snd} :: \forall x\ldotp\forall y\ldotp (x,y)\to y]$. The solution is \texttt{fst p
+$[\texttt{fst} :: \forall x\ldotp\forall y\ldotp (x,y)\to x, \texttt{snd} :: 
+\forall x\ldotp\forall y\ldotp (x,y)\to y]$. The solution is \texttt{fst p
 (snd p)}, which is only possible if $\forall x\ldotp\forall y\ldotp (x,y)$ in
 $\texttt{fst} :: \forall x\ldotp\forall y\ldotp (x,y)\to x$,
 unifies with $p :: (a \to b, a)$. Because the type variable $x$ needs to unify
@@ -299,53 +337,365 @@ repeated subproblems are generated over the course of the search.
 Redoing the same subproblems wastes a lot of time.
 This makes memoization crucial to practical 
 top-down enumeration, which \textsc{Myth} \cite{myth} is able to solve in a 
-first-order setting.
+monomorphic setting.
 
-However, memoization is mechanically difficult to deal with
-when facing polymorphic type variables.
-We must be careful when dealing with goals that overlap, for example:
-$\alpha_0 \to \texttt{Int}$ and $\alpha_1 \to \texttt{Int}$ and
-$(\texttt{Int} \to \texttt{Int}) \to \texttt{Int}$.
-We discovered the following methods to resolve problems that arose due
-to this complexity.
+% \subsubsection{Memoization map} 
+% \vspace{2mm}
+% \noindent \textit{3.3.1 \hspace{2mm} Memoization map.}
+\vspace{2mm}
+\noindent \textbf{\textit{Memoization map.}}
+We organize our memoization map as follows:
+% \texttt{(key} -- goal type and desired program size,
+% \texttt{value} -- list of programs of the given size
+% that match the goal type\texttt{)}.
+% $$\texttt{(goal type and desired program size} \implies
+% \texttt{list of programs of the given size
+% that match the goal type)}$$
 
-\subsubsection{Overlapping Goals}
+\begin{center}
+  goal type and desired program size $\implies \big\{$ solutions at the given size $\big\}$
+\end{center}
+% \centering{goal type and desired program size $\implies$ solutions at the given size}
 
-To resolve a space explosion issue where equivalent goals
-$\alpha_0 \to \texttt{Int}$ and $\alpha_1 \to \texttt{Int}$
-contain the exact same programs being stored in two different locations,
-the cache renames all free type variables in goals --
-the first type variable becomes $\beta_0$,
-the second becomes $\beta_1$, and so on.
-This treats both goals as $\beta_0 \to \texttt{Int}$,
-making syntactically different goals semantically equivalent.
+% \begin{itemize}
+%   \item \textbf{\texttt{key}}: goal type and desired program size
+%   \item \textbf{\texttt{value}}: list of programs of the given size
+%                           that match the goal type
+% \end{itemize}
+% in a type goal and a desired size, and outputs a list of programs of the given size
+% that match the goal type.
+
+% \subsubsection{Complications with polymorphism} 
+% \vspace{2mm}
+% \noindent \textit{3.3.2 \hspace{2mm} Complications with polymorphism.}
+\vspace{1mm}
+\noindent \textbf{\textit{Complications with polymorphism -- type variable clashes.}}
+If we allow both memo keys and program types
+to contain polymorphic type variables (which \texttt{Petsy} does), memoization becomes 
+difficult to implement.
+% \vspace{2mm}
+% \noindent \textbf{\textit{Type Variable Clashes.}}
+When synthesizing function arguments, we need to know their desired type 
+and therefore the type of the function.
+In polymorphic settings, though, getting this information is non-trivial. 
+Say, for instance, that our memo map contains a mapping
+
+\begin{center}
+  $(\alpha_1 \to \texttt{Int})$ at size 1 $\implies$
+$\big\{\texttt{length} :: [\alpha_2] \to \texttt{Int}\big\}$
+\end{center}
+
+One possible solution is to simply retrieve the stored type from the map itself, 
+$[\alpha_2] \to \texttt{Int}$.
+This, however, will cause type clashes at retrieval time. When we originally store the program 
+\texttt{length}, $\alpha_1$ and $\alpha_2$ are fresh type variables. But when we 
+retrieve this in a later context, $\alpha_1$ and $\alpha_2$ might already be in use for 
+something else, and by using the stored type we'd be unintentionally linking these existing 
+type variables with the type of \texttt{length}.
+To overcome this clash, we ignore the stored type and \textit{infer the type} of the retrieved 
+program from scratch upon retrieval instead. 
+
+We also normalize memo key type variables, making the first one 
+$\beta_0$, the second one $\beta_1$, and so on. This saves space by mapping semantically 
+equivalent goal types, like $\alpha_0 \to \texttt{Int}$ and $\alpha_1 \to \texttt{Int}$, 
+to the same key, $\beta_0 \to \texttt{Int}$.
+
+% This solves an issue of storing 
+% duplicate programs for goals types that happen to be syntactically different but 
+% semantically equivalent.  
+
+% This solves an issue of redundancy that 
+% occurs when storing 
+% equivalent solutions to goal types happen to be syntactically different but 
+% semantically equivalent. 
+% For example, if we rename $\alpha_0 \to \texttt{Int}$ and $\alpha_1 \to \texttt{Int}$
+% to $\beta_0 \to \texttt{Int}$, they become the same 
+% goal and would therefore have their solutions stored in the same place. 
+
+% daniel's thuoghts
+% This saves space by mapping semantically equivalent goal types, a0 -> Int and a1 -> Int
+% to the same key
+
+
+% \begin{enumerate}
+%   % use a separate set of type variables for memo keys, which are not used 
+% %               elsewhere in the search 
+%   \item normalize memo key type variables, making the first one $\beta_0$,
+%         the second one $\beta_1$, and so on.
+%   % \item normalize the goal types by renaming type variables not used elsewhere in the search. 
+%   %       The first type variable in the goal
+%   %       now becomes $\beta_0$, for example, the second becomes $\beta_1$, and so on.
+%   % \item normalize the goal types by using a seperate set of type variables as memo keys that 
+%   %       are not 
+%   %       used anywhere else outside the search. The first type variable in the goal
+%   %       now becomes $\beta_0$, for example, the second becomes $\beta_1$, and so on.
+%   % The reason we do this is ------
+%   % 
+%   \item infer the type of the retrieved program from scratch upon retrieval
+%   independantly from the stored type.
+
+% \end{enumerate}
+
+% The first addition also solves the issue of redundancy that occurs when storing 
+% equivalent solutions to goal types happen to be syntactically different but 
+% semantically equivalent. 
+% \vspace{2mm}
+% \noindent \textbf{\textit{Overlapping Goals.}} 
+% There is also an issue of space explosion when equivalent goal types
+% To resolve a space explosion issue where equivalent goals
+% For example, if we rename $\alpha_0 \to \texttt{Int}$ and $\alpha_1 \to \texttt{Int}$
+% to $\beta_0 \to \texttt{Int}$, as the first addition suggests, they become the same 
+% goal and would therefore have their solutions stored in the same place. 
+
+% are syntactically different but semantically equivalent. If we 
+% were to use their original types as the goal type, we would be storing 
+% solutions to these goals, which are exactly the same,
+% in two different locations in the map. To avoid this, 
+% the cache renames all free type variables in goals --
+% the first type variable becomes $\beta_0$,
+% the second becomes $\beta_1$, and so on.
+% This treats both goals as $\beta_0 \to \texttt{Int}$,
+% making them semantically equivalent.
+
+% , so that 
+% the stored can be discarded and there is no longer a conflict 
+% with the current $\alpha_1$.
+
+
+%       Here a1, a2 were fresh type variables at the time the program was memoized, 
+%       but at the time of retrieval, they might be in use in the context, causing a 
+%       clash and changing the meaning of this key-value pair. To overcome this problem we 
+%           1) use a separate set of type variables for memo keys, which are not used 
+%               elsewhere in the search 
+%           2) forget the type of the memoized program and infer it from scratch upon 
+%               retrieval".   
+
+
+
+% For instance, one program that solves the goal $\alpha_0 \to Int$ is
+% $\texttt{length} :: [\alpha_1] \to Int$. Notice that
+% \texttt{length} has a more specific type than the goal,
+% and uses a type variable $\alpha_1$. One possible method to get this more specific type 
+% at retrieval
+% is to store this more specific type along with the program \texttt{length}.
+% This would lead to a problem when retrieving \texttt{length} later in the search,
+% because the stored type $[\alpha_1] \to Int$ contains a type variable $\alpha_1$
+% that might now be in use for something else.
+
+% To avoid this clash, instead of relying on the stored type, which in this case
+% depends on $\alpha_1$, we infer the type
+% of the retrieved program by generating a "fresh" type, $A_0$ for example, 
+% independantly from the stored type, so that 
+% the stored $\alpha_1$ can be discarded and there is no longer a conflict 
+% with the current $\alpha_1$.
+
+
+
+
+% For instance, we run into trouble if we try to save work by storing the more refined type 
+% along with programs
+% outline
+% An issue is that if we were to store the type along with the programs so
+% we wouldn't have to re-do work, this doesn't work because stored types
+% may have type variables, that would lead to type clashes, which is bad,
+% here's an example, a retrieved $\alpha_3$ could clash with existing
+% $\alpha_3$, oh no, we just cannot store the type, this is one
+% reason we have to be really careful when working with memoize,
+% we must use type inference from the get go
+
+% \vspace{2mm}
+% \noindent \textbf{\textit{Overlapping Goals.}} 
+% There is also an issue of space explosion when equivalent goal types
+% % To resolve a space explosion issue where equivalent goals
+% $\alpha_0 \to \texttt{Int}$ and $\alpha_1 \to \texttt{Int}$
+% are syntactically different but semantically equivalent. If we 
+% were to use their original types as the goal type, we would be storing 
+% solutions to these goals, which are exactly the same,
+% in two different locations in the map. To avoid this, 
+% the cache renames all free type variables in goals --
+% the first type variable becomes $\beta_0$,
+% the second becomes $\beta_1$, and so on.
+% This treats both goals as $\beta_0 \to \texttt{Int}$,
+% making them semantically equivalent.
+
+
+
+% * say something like "Memoization is tricky in a polymorphic setting because 
+% 1) the memo keys can contain free type variables 
+% 2) the types of memoized programs can also contain free type variables 
+% 3) the type of a memoized program does not necessarily coincide with the 
+%     type of its key, but can be more specific. This creates two main problems:
+%         - type variable clashes 
+%         - overlapping goals." 
+
+
+% TODO!
+% the tricky bit of memo is that
+%   1. memo keys (the goal types) contain tvars, which mean
+%   2. types of memoized programs contain tvars
+%   3. types of memoized programs can be more specific than the key,
+%      like length :: [alpha1] -> Int
+%      solves the goal alpha0 -> Int
+% need to somehow bring in the fact that we store types of programs along with the program!
+%   1. 
+% 
+
+% old writeup below:
+
+% % Another issue is that if we were to use the stored program type, which 
+% % could contain free variables, as the type of the program, we would run into 
+% % type clashes when trying to synthesize the program's arguments. 
+% Say, for example, we generate and store a program that has $\alpha_3$ in 
+% its type, and at at the time $\alpha_3$ is 
+% free. When we retrieve this program later in the search, 
+% $\alpha_3$ might now be in use for something else, and we would be linking 
+% the two free variables unintentially and creating a clash. 
+
+% To avoid this clash, instead of relying on the stored type, which in this case
+% depends on $\alpha_3$, we infer the type
+% of the retrieved program by generating a "fresh" type, $A_0$ for example, 
+% independantly from the stored type, so that 
+% the stored $\alpha_3$ can be discarded and there is no longer a conflict 
+% with the current $\alpha_3$.
+% -----
+
+% However, memoization is mechanically difficult to deal with
+% when facing polymorphic type variables.
+% We must be careful when dealing with goals that overlap, for example:
+% $\alpha_0 \to \texttt{Int}$ and $\alpha_1 \to \texttt{Int}$ and
+% $(\texttt{Int} \to \texttt{Int}) \to \texttt{Int}$.
+% We discovered the following methods to resolve problems that arose due
+% to this complexity.
+
+
+% -----
+% I'm not a big fan of how 3.3.2 is explained. 
+% I would call it something like "Type Variable Clashes" 
+% maybe put it before "Overlapping Goals" because it's a bigger problem 
+% (it's a soundness problem, not a speed problem). 
+
+% So before the section 3.3.1 I wouldn't mention overlapping goals at all. 
+% Instead you should: 
+%     * describe what your memo actually stores (what are the keys and what are the values)
+%     * say something like "Memoization is tricky in a polymorphic setting because 
+%         1) the memo keys can contain free type variables 
+%         2) the types of memoized programs can also contain free type variables 
+%         3) the type of a memoized program does not necessarily coincide with the 
+%             type of its key, but can be more specific. This creates two main problems:
+%                 - type variable clashes 
+%                 - overlapping goals." 
+
+
+%     * Now talk about clashes in 3.1: "Because a program can be memoized at one point 
+%       in the search, and then retrieved at a completely different point, one should 
+%       be careful to make sure that the type variables both in keys and in memoized 
+%       programs do not clash with type variables in the context at the time of retrieval. 
+%       For example, a memo might contain a key-value pair  
+%       (a1 -> Int)  :=  { length :: [a2] -> Int  }. 
+%       Here a1, a2 were fresh type variables at the time the program was memoized, 
+%       but at the time of retrieval, they might be in use in the context, causing a 
+%       clash and changing the meaning of this key-value pair. To overcome this problem we 
+%           1) use a separate set of type variables for memo keys, which are not used 
+%               elsewhere in the search 
+%           2) forget the type of the memoized program and infer it from scratch upon 
+%               retrieval".   
+
+%     * Then talk about overlapping goals.
+% -----
+
+% \subsubsection{Overlapping Goals}
+
+% To resolve a space explosion issue where equivalent goals
+% $\alpha_0 \to \texttt{Int}$ and $\alpha_1 \to \texttt{Int}$
+% contain the exact same programs being stored in two different locations,
+% the cache renames all free type variables in goals --
+% the first type variable becomes $\beta_0$,
+% the second becomes $\beta_1$, and so on.
+% This treats both goals as $\beta_0 \to \texttt{Int}$,
+% making syntactically different goals semantically equivalent.
   
-\subsubsection{Preserving Unification}
-The previous method with $\beta$'s introduces a small issue in program
-retrieval. Consider how the program \texttt{length} of type $[\alpha_1] \to
-\texttt{Int}$ solves the goal $\alpha_0 \to \texttt{Int}$. This unifies
-$[\alpha_1]$ with $\alpha_0$, which is important information for
-\textsc{Synquid}'s algorithm. With memoization, however, the cache stores
-\texttt{length} for the more general goal $\beta_0 \to \texttt{Int}$. When
-\texttt{length} is retrieved from the cache to solve $\alpha_0 \to
-\texttt{Int}$, we lose the fact that $\alpha_0$ now unifies with a list, as
-this information is never stored.
+% \subsubsection{Preserving Unification}
+% The previous method with $\beta$'s introduces a small issue in program
+% retrieval. Consider how the program \texttt{length} of type $[\alpha_1] \to
+% \texttt{Int}$ solves the goal $\alpha_0 \to \texttt{Int}$. This unifies
+% $[\alpha_1]$ with $\alpha_0$, which is important information for
+% \textsc{Synquid}'s algorithm. With memoization, however, the cache stores
+% \texttt{length} for the more general goal $\beta_0 \to \texttt{Int}$. When
+% \texttt{length} is retrieved from the cache to solve $\alpha_0 \to
+% \texttt{Int}$, we lose the fact that $\alpha_0$ now unifies with a list, as
+% this information is never stored.
 
-Instead of worrying about how to store this information,
-we decided to simply unify the type of \texttt{length}, $[\alpha_1] \to \texttt{Int}$,
-with the goal type $\alpha_0 \to \texttt{Int}$
-at the time of retrieval. This recovers the unification information.
-Although obtaining the type \texttt{length} is easy, as it is a single component,
-in general we obtain the type of the retrieved program via \textit{type inference}.
+% Instead of worrying about how to store this information,
+% we decided to simply unify the type of \texttt{length}, $[\alpha_1] \to \texttt{Int}$,
+% with the goal type $\alpha_0 \to \texttt{Int}$
+% at the time of retrieval. This recovers the unification information.
+% Although obtaining the type \texttt{length} is easy, as it is a single component,
+% in general we obtain the type of the retrieved program via \textit{type inference}.
 
 
+
+
+
+% the thing we had before
+% -----
+
+% Because of its enumerative and iterative deepening qualities, \textsc{Petsy} 
+% generates many repeated subproblems
+% over the course of the search, wasting a lot of time redoing searches it has
+% already done. This makes memoization crucial to practical 
+% top-down enumeration, which \textsc{Myth} \cite{myth} was able to solve in a 
+% first-order setting.
+% In our polymorphic context, however, memoization is non-trivial, as goal types can now contain free 
+% type variables. This causes the following issues.
+
+% \vspace{2mm}
+% \noindent \textbf{\textit{Redundancy.}} In \textsc{Petsy}, free variables 
+% are represented as $\alpha$'s. If you look at 2 goals, $\alpha_0 \to Int$ 
+% and $\alpha_1 \to Int$, even though they are syntactically different because of the subscripts,
+% they are semantically equivalent because each is essentially saying "I want 
+% a program that takes in anything and returns an \texttt{Int}". Because 
+% of their semantic difference, however, they would be stored in 2 different 
+% locations in the memo map, resulting in the exact same programs being stored
+% in 2 different locations. 
+% How can we avoid this and make these two goals equivalent?
+
+% To resolve this, we rename any incoming free type variables 
+% to be "fresh" $\beta$'s before using them as the map lookup key. That way, if 
+% two different goals with free variables come in, say $\alpha_0 \to Int$ and 
+% $\alpha_1 \to Int$, they will each be renamed to $\beta_0 \to Int$ 
+% and $\beta_0 \to Int$, meaning that they will hit the same entry in the map,
+% despite having different original names.
+
+% \vspace{2mm}
+% \noindent \textbf{\textit{Type unificiation clashes.}} 
+% % TODO reword
+% Another issue comes into play when we're trying to synthesize 
+% arguments to a component and the component's type contains 
+% free variables (that are yet to be unified with a concrete
+% type). 
+% % Another issue is that if we were to use the stored program type, which 
+% % could contain free variables, as the type of the program, we would run into 
+% % type clashes when trying to synthesize the program's arguments. 
+% Say, for example, we generate and store a program that has $\alpha_3$ in 
+% its type, and at at the time $\alpha_3$ is 
+% free. When we retrieve this program later in the search, 
+% $\alpha_3$ might now be in use for something else, and we would be linking 
+% the two free variables unintentially and creating a clash. 
+
+% To avoid this clash, instead of relying on the stored type, which in this case
+% depends on $\alpha_3$, we infer the type
+% of the retrieved program by generating a "fresh" type, $A_0$ for example, 
+% independantly from the stored type, so that 
+% the stored $\alpha_3$ can be discarded and there is no longer a conflict 
+% with the current $\alpha_3$.
+% -----
 
 \section{Results}
 
 % table of data 
 \input{results}
 
-We tested our results on 20 benchmarks that we took from \textsc{Tygar}'s \cite{tygar} paper. 
+We evaluated \textsc{Petsy} on 20 benchmarks that we took from \textsc{Tygar}'s \cite{tygar} paper. 
 We used the same set of 130 components in all experiments. Because \textsc{Tygar}'s search 
 space was most similar to ours, we chose to compare \textsc{Petsy} with \textsc{Tygar}.
 The results can be found in Table \ref{tab:results}.
@@ -353,14 +703,12 @@ The results can be found in Table \ref{tab:results}.
 % We tested our results on 20 queries with 130 components each, that were based on the queries 
 % from \textsc{Tygar}'s \cite{tygar} paper, and compared \textsc{Petsy} with \textsc{Tygar}, 
 % which is the tool that most resembles our own in terms of input and outputs. 
-% % TODO above sentence is weird and we need to tie tygar in better 
 % The results can be found in Table \ref{tab:results}.
 
 
 % \subsection{\textsc{Tygar} vs. Memoization}
 \vspace{2mm}
 \noindent \textbf{\textit{Analysis.}} 
-% TODO re-write this once we have more accurate test bench
 \textsc{Petsy} and \textsc{Tygar} are comparable.
 While there are some tests that \textsc{Petsy} does much \textit{better} in -- \#12 and \#17 --
 and some tests that \textsc{Petsy} does much \textit{worse} in -- \#5 and \#19 -- both tools perform
@@ -370,10 +718,8 @@ about equally well (within a few seconds) on the other benchmarks.
 % and some tests that we do much worse in -- \#5 and \#19 -- both tools perform
 % relatively the same and are quite comparable.
 
-% Test \#(TODO) shows how we are able to synthesize lambdas whereas \textsc{Tygar} cannot.
-
 These results are quite encouraging. For one, since \textsc{Petsy} takes advantage of 
-lambdas and \textsc{Tygar} doesn't, \textsc{Petsy} is more expressive and therefore searches through 
+$\lambda$-abstractions and \textsc{Tygar} doesn't, \textsc{Petsy} is more expressive and therefore searches through 
 more programs, yet is still competitive. We also have only implemented the most
 basic form of memoization, and plan to improve upon it to make \textsc{Petsy} even
 faster (see \nameref{future}).
@@ -381,7 +727,7 @@ faster (see \nameref{future}).
 \vspace{2mm}
 \noindent \textbf{\textit{Quality of Results.}} For the most part, both \textsc{Tygar} 
 and \textsc{Petsy} returned the same programs. If they didn't return the same program
-(because \textsc{Petsy} found a solution using lambdas),
+(because \textsc{Petsy} found a solution using $\lambda$-abstractions),
 the programs were equivalent, so there is no significant difference in program quality between the two tools.
 
 \section{Future Work}
@@ -395,13 +741,15 @@ which we can improve upon what we have:
         find programs based on query. This would make lookup much faster.
   \item Take advange of sub-typing in the memo keys so that the same programs
         aren't stored multiple times. For example, all programs in goal 
-        $Int \to Int$ should be in goal $\alpha_0 \to Int$. When
-        we lookup $\alpha_0 \to Int$, we could first look at $Int \to Int$
+        $\texttt{Int} \to \texttt{Int}$ should be in goal $\alpha_0 \to \texttt{Int}$. When
+        we lookup $\alpha_0 \to \texttt{Int}$, we could first look at $\texttt{Int} \to \texttt{Int}$
         and then move on to other programs that are more general.
   % \item Explore different ways of calculating program size to see if there is 
   %       size calculation that prioritizes more desired programs. As example would be 
   %       assigning more weight to programs with uninstantiated type variables 
 \end{enumerate}
+
+\newpage
 
 %% The next two lines define the bibliography style to be used, and
 %% the bibliography file.
